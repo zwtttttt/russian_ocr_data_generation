@@ -27,7 +27,7 @@ def gbk2312():
 def common(type='cn'):
     contents = []
     filename = os.path.join('./dict', f"{type}.txt")
-    if not os.path.exists(filename): raise Exception(f"The dict of ur target language is not exist: {type}.txt")
+    if not os.path.exists(filename): raise Exception(f"The dict of ur target language is not exist: {filename}")
     with open(filename, 'r', encoding='utf-8') as f:
         contents = f.read().splitlines()
     return contents
