@@ -1,1 +1,8 @@
+# the spyder generate the file.
 *.spyproject
+
+# idk what's the meaning of the file but i just don't wanna upload it.
+*__pycache__
+
+# gitnore file
+*.gitnore
