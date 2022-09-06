@@ -18,11 +18,14 @@ def parse():
     parser.add_argument('--group', type=int, default=4, help='the group of the strings. <- just like this sentence, group is 5.')
     
     # font style.
-    parser.add_argument('--font_size', type=int, default=16, help='size of the letter. font size.')
-    parser.add_argument('--random_font', type=int, default=1, help='[0, 1] 0: default font, 1: random font in the font path files.')
-    parser.add_argument('--multi_size', type=int, default=1, help='[0, 1] 0: stable font size, 1: multi size in [fontsize * 0.8, fontsize * 1.2].')
+    parser.add_argument('--font_size', type=int, default=18, help='size of the letter. font size.')
+    parser.add_argument('--random_font_size', type=int, default=1, help='[0, 1] 0: stable font size, 1: multi size in [fontsize * 0.8, fontsize * 1.2].')
     
-    # background style. #TODO
+    # background style. 
+    parser.add_argument('--background_size', type=int, default=(320, 160), help='the background img size.')
+    parser.add_argument('--background_color', type=int, default=(225, 225, 225), help='the background color (RGB), if this param is not None then we will ignore the background_path.')
+    parser.add_argument('--random_background_size', type=int, default=1, help='[0, 1] 0: stable background size, 1: multi size in [background size * 0.8, background size * 1.2].')
+    parser.add_argument('--random_background_color', type=int, default=1, help='[0, 1] 0: stable color, 1: random color. if is 1, we will generate the color in [0, 255]')
     
     # path arguments.
     parser.add_argument('--save_path', type=str, default='./data', help='the path u wanna save the img data.')
