@@ -22,8 +22,8 @@ def parse():
     parser.add_argument('--random_font_size', type=int, default=1, help='[0, 1] 0: stable font size, 1: multi size in [fontsize * 0.8, fontsize * 1.2].')
     
     # background style. 
-    parser.add_argument('--background_size', type=int, default=(320, 160), help='the background img size.')
-    parser.add_argument('--background_color', type=int, default=(225, 225, 225), help='the background color (RGB), if this param is not None then we will ignore the background_path.')
+    parser.add_argument('--background_size', type=int, nargs='+', default=(320, 160), help='the background img size. if u wanna set the bg just a lit bigger than strings size than just set it (0, 0). sure this param is small enough')
+    parser.add_argument('--background_color', type=int, nargs='+', default=(255, 255, 255), help='the background color (RGB), if this param is not None then we will ignore the background_path.')
     parser.add_argument('--random_background_size', type=int, default=1, help='[0, 1] 0: stable background size, 1: multi size in [background size * 0.8, background size * 1.2].')
     parser.add_argument('--random_background_color', type=int, default=1, help='[0, 1] 0: stable color, 1: random color. if is 1, we will generate the color in [0, 255]')
     

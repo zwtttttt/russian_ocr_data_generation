@@ -8,4 +8,4 @@
 *.gitnore
 
 # img data.
-*.png
+*temp.png
