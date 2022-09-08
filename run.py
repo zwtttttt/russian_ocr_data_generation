@@ -19,6 +19,7 @@ def parse():
     
     # font style.
     parser.add_argument('--font_size', type=int, default=18, help='size of the letter. font size.')
+    parser.add_argument('--font_color', type=int, nargs='+', default=(0, 0, 0), help='the strings font color.')
     parser.add_argument('--random_font_size', type=int, default=1, help='[0, 1] 0: stable font size, 1: multi size in [fontsize * 0.8, fontsize * 1.2].')
     
     # background style. 
