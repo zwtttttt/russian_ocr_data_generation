@@ -57,6 +57,15 @@ class Style:
 
         return img[ymin: ymax, xmin: xmax, :]
 
+    #FIXME: random background size with bugs.
+    def random_paste(self, strings, font_color, font, bg, safe_size, safe_area, size):
+        dr = ImageDraw.Draw(bg)
+        bias = tuple(safe_area if safe_size[i] == s else random.randint(safe_area, s - safe_size[i]) for i, s in enumerate(size))
+        dr.text(bias, strings, fill=font_color, font=font)
+
+        print(f"{colorstr('bias: ')}{bias}")
+        return bg
+
     def font(self):
         size = self.opt.font_size if self.opt.font_size is not None else self.DEFAULT_FONT_SIZE
         size = self.random_size(self.opt.random_font_size, size)
@@ -72,10 +81,9 @@ class Style:
         # print(colorstr(f"font: {font}"))
         # return ImageFont.load_path(font)
     
-    #TODO: set the backgroup color and size by using opt arguments.
     def background(self, strings, font):
-        safe_area = 20 # 20 pixel as safe area
-        safe_size = tuple(s + safe_area for s in self.strings_size(strings, font))
+        safe_area = 20 # 20 pixel as safe area. left & right extend. top & bottom extend.
+        safe_size = tuple(s + safe_area * 2 for s in self.strings_size(strings, font))
         size = tuple(max(self.random_size(self.opt.random_background_size, self.opt.background_size)[i], safe_size[i]) for i in range(2))
         
         if self.opt.background_path is None:
@@ -83,7 +91,7 @@ class Style:
                 # Add random color as data augmentation.
                 color = tuple(random.randint(0, 256) for _ in range(3)) if random.uniform(0, 1) < 0.4 else  self.opt.background_color
             else: self.opt.background_color
-            font_color = tuple(255 - c for c in color) # font color.
+            font_color = tuple(255 - c for c in color) #FIXME: we need fix it the color will depends on opt.font_color
             
             print(f"{colorstr('background:')} size: {size} | color: {color} | fontcolor: {font_color}")
             return Image.new("RGB", size, color), font_color, safe_size
@@ -98,10 +106,15 @@ class Style:
             else: bgs = self.BACKGROUND_IMGS
             bg = np.array(random.sample(bgs, 1)[0]) # random sample one bg. h, w, c
             
-            # crop img or link them.
-            bg = self.random_crop_img(bg, size)
+            # 1: crop img or link them.
+            bg = Image.fromarray(self.random_crop_img(bg, size))
+            
+            # 2. write string to background.
+            font_color = self.opt.font_color #TODO: change the font_color.
+            bg = self.random_paste(strings, font_color, font, bg, safe_size, safe_area, size)
 
-            return Image.fromarray(bg), (0, 0, 0), safe_size
+            print(f"{colorstr('background:')} size: {size} | path: {self.opt.background_path} | fontcolor: {font_color}")
+            return bg
 
 
 """
@@ -112,13 +125,11 @@ def generate_strings(opt, strings: str):
     style = Style(opt)
 
     font = style.font()
-    bg, font_color, safe_size = style.background(strings, font)
+    bg = style.background(strings, font)
     
     # TODO: drawtext(bg, strings, font_color, font, safe_size)
     
-    dr = ImageDraw.Draw(bg)
-
-    dr.text((10, 5), strings, fill=font_color, font=font)
+    
 
     bg.show()
     bg.save('./temp.png')
