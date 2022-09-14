@@ -24,6 +24,8 @@ class Style:
         self.IMG_SUFFIX = ['jpg', 'png', 'bmp']
         self.BACKGROUND_IMGS = []
 
+        self.info_print(self.opt)
+
     def random_size(self, flag, size):
         if isinstance(size, int): return int(size * random.uniform(0.8, 1.2)) if flag else size
         return tuple(int(s * random.uniform(0.8, 1.2)) for s in size) if flag and isinstance(size, Iterable) else size
@@ -57,13 +59,10 @@ class Style:
 
         return img[ymin: ymax, xmin: xmax, :]
 
-    #FIXME: random background size with bugs.
     def random_paste(self, strings, font_color, font, bg, safe_size, safe_area, size):
         dr = ImageDraw.Draw(bg)
-        bias = tuple(safe_area if safe_size[i] == s else random.randint(safe_area, s - safe_size[i]) for i, s in enumerate(size))
+        bias = tuple(safe_area if s - safe_size[i] <= safe_area else random.randint(safe_area, s - safe_size[i]) for i, s in enumerate(size))
         dr.text(bias, strings, fill=font_color, font=font)
-
-        print(f"{colorstr('bias: ')}{bias}")
         return bg
 
     def font(self):
@@ -71,8 +70,6 @@ class Style:
         size = self.random_size(self.opt.random_font_size, size)
         
         if not os.path.exists(self.opt.font_path): 
-            print(f"{colorstr('font:')} size: {size} | style: {self.DEFAULT_FONT}")
-            
             return ImageFont.truetype(self.DEFAULT_FONT, size)
         
         # FIXME: use a tool to generate the bitmap font by using the ttf font file.
@@ -90,11 +87,11 @@ class Style:
             if self.opt.random_background_color:
                 # Add random color as data augmentation.
                 color = tuple(random.randint(0, 256) for _ in range(3)) if random.uniform(0, 1) < 0.4 else  self.opt.background_color
-            else: self.opt.background_color
-            font_color = tuple(255 - c for c in color) #FIXME: we need fix it the color will depends on opt.font_color
-            
-            print(f"{colorstr('background:')} size: {size} | color: {color} | fontcolor: {font_color}")
-            return Image.new("RGB", size, color), font_color, safe_size
+            else: 
+                color = self.opt.background_color
+            font_color = tuple(255 - c if abs(self.opt.font_color[i] - c) < 25 else self.opt.font_color[i] for i, c in enumerate(color))
+
+            bg = Image.new("RGB", size, color)
         else:
             if not os.path.exists(self.opt.background_path): raise Exception(f"The background path is not exist. pleace check it {colorstr(self.opt.background_path)}")
             bgs = [] # background imgs.
@@ -110,26 +107,32 @@ class Style:
             bg = Image.fromarray(self.random_crop_img(bg, size))
             
             # 2. write string to background.
-            font_color = self.opt.font_color #TODO: change the font_color.
-            bg = self.random_paste(strings, font_color, font, bg, safe_size, safe_area, size)
+            font_color = self.opt.font_color
+        
+        bg = self.random_paste(strings, font_color, font, bg, safe_size, safe_area, size)
+            
+        return bg
 
-            print(f"{colorstr('background:')} size: {size} | path: {self.opt.background_path} | fontcolor: {font_color}")
-            return bg
+    def info_print(self, opt):
+        # info print.
+        print(
+            f"##################FONT##################", 
+            f"{colorstr('font_size: ')}{opt.font_size}", 
+            f"{colorstr('font_color: ')}{opt.font_color}", 
+            f"{colorstr('random_font_size: ')}{bool(opt.random_font_size)}", 
+            f"\n###############BACKGROUND###############", 
+            f"{colorstr('background_size: ')}{opt.background_size}", 
+            f"{colorstr('background_color: ')}{opt.background_color}", 
+            f"{colorstr('random_background_size: ')}{bool(opt.random_background_size)}", 
+            f"{colorstr('random_background_color: ')}{bool(opt.random_background_color)}", 
+            f"\n##################PATH##################", 
+            f"{colorstr('save_path: ')}{opt.save_path}", 
+            f"{colorstr('font_path: ')}{opt.font_path}", 
+            f"{colorstr('background_path: ')}{opt.background_path}", 
+            "\n", 
+            sep='\n', 
+        )
 
-
-"""
-TODO: (we should just create a file and randomly choose the font and set the size by opt.)
-"""
-def generate_strings(opt, strings: str):
-    # Generate the style Class.
-    style = Style(opt)
-
-    font = style.font()
-    bg = style.background(strings, font)
-    
-    # TODO: drawtext(bg, strings, font_color, font, safe_size)
-    
-    
-
-    bg.show()
-    bg.save('./temp.png')
+def generate_data(opt, style, strings: str):
+    # Generate the russian data img.
+    return style.background(strings, style.font())

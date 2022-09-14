@@ -9,8 +9,6 @@ Created on Thu Sep  1 19:55:54 2022
 import random
 import os
 
-from utils.colorstr import colorstr
-
 UNICODE_CN_MODE = "unicode()"
 GBK2312_CN_MODE = "gbk2312()"
 COMMON_CN_MODE = "common(type='cn')"
@@ -75,6 +73,5 @@ def random_russian(length: int, group: int, mode: str) -> str:
         content.insert(content.index(n), ' ')
     strings = "".join(content)
 
-    print(f"{colorstr('strings: ')}{strings}")
     return strings
     

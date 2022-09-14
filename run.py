@@ -6,9 +6,12 @@ Created on Sun Aug 28 21:18:32 2022
 @email: 1030456532@qq.com
 """
 import argparse
+import os
+
+from tqdm import tqdm
 from utils.random_strings import COMMON_RU_MODE
 from utils.random_strings import random_russian
-from utils.generate import generate_strings
+from utils.generate import Style, generate_data
 
 def parse():
     parser = argparse.ArgumentParser()
@@ -31,18 +34,23 @@ def parse():
     # path arguments.
     parser.add_argument('--save_path', type=str, default='./data', help='the path u wanna save the img data.')
     parser.add_argument('--font_path', type=str, default='./style/fontss', help='the path for the font file.')
-    parser.add_argument('--background_path', type=str, default='./style/bg', help='the path for the background file.')
+    parser.add_argument('--background_path', type=str, default=None, help='the path for the background file.')
 
     
     return parser
     
 def main(opt):
-    # 1. random strings.
-    strings = random_russian(opt.length, opt.group, COMMON_RU_MODE)
+    # Generate the style Class.
+    style = Style(opt)
 
-    # 2. generate the data pic. 
-    generate_strings(opt, strings)
-    
+    for i in tqdm(range(opt.count), desc="generate data: ", ncols=80):
+        # 1. random strings.
+        strings = random_russian(opt.length, opt.group, COMMON_RU_MODE)
+
+        # 2. generate the data pic. 
+        bg = generate_data(opt, style, strings)
+        bg.save(os.path.join(opt.save_path, f"temp{i}.png"))
+
 if __name__ == "__main__":
     opt = parse().parse_args()
     main(opt)
