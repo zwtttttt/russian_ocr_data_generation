@@ -60,16 +60,19 @@ class Style:
         return img[ymin: ymax, xmin: xmax, :]
 
     def random_paste(self, strings, font_color, font, bg, safe_size, safe_area, size):
+        bound = 5 # the bound for the img.
         dr = ImageDraw.Draw(bg)
         bias = tuple(safe_area if s - safe_size[i] <= safe_area else random.randint(safe_area, s - safe_size[i]) for i, s in enumerate(size))
+        xmin, ymin = (x - bound for x in bias)
+        xmax, ymax = (x + [xmin, ymin][i] - safe_area * 2 + bound for i, x in enumerate(safe_size))
         dr.text(bias, strings, fill=font_color, font=font)
-        return bg
+        return bg, xmin, ymin, xmax, ymax
 
     def font(self):
         size = self.opt.font_size if self.opt.font_size is not None else self.DEFAULT_FONT_SIZE
         size = self.random_size(self.opt.random_font_size, size)
         
-        if not os.path.exists(self.opt.font_path): 
+        if self.opt.font_path is None or not os.path.exists(self.opt.font_path): 
             return ImageFont.truetype(self.DEFAULT_FONT, size)
         
         # FIXME: use a tool to generate the bitmap font by using the ttf font file.
@@ -109,9 +112,9 @@ class Style:
             # 2. write string to background.
             font_color = self.opt.font_color
         
-        bg = self.random_paste(strings, font_color, font, bg, safe_size, safe_area, size)
+        bg, xmin, ymin, xmax, ymax = self.random_paste(strings, font_color, font, bg, safe_size, safe_area, size)
             
-        return bg
+        return bg, xmin, ymin, xmax, ymax
 
     def info_print(self, opt):
         # info print.
