@@ -33,7 +33,7 @@ def parse():
     
     # path arguments.
     parser.add_argument('--save_path', type=str, default='./data', help='the path u wanna save the img data.')
-    parser.add_argument('--font_path', type=str, default='./style/fontss', help='the path for the font file.')
+    parser.add_argument('--font_path', type=str, default=None, help='the path for the font file.')
     parser.add_argument('--background_path', type=str, default=None, help='the path for the background file.')
 
     
@@ -48,8 +48,13 @@ def main(opt):
         strings = random_russian(opt.length, opt.group, COMMON_RU_MODE)
 
         # 2. generate the data pic. 
-        bg = generate_data(opt, style, strings)
+        bg, xmin, ymin, xmax, ymax = generate_data(opt, style, strings)
+
+        # 3. save img.
         bg.save(os.path.join(opt.save_path, f"temp{i}.png"))
+
+        # 4. save labels.
+        print(f"\nxmin: {xmin}, ymin: {ymin}, xmax: {xmax}, ymax: {ymax}")
 
 if __name__ == "__main__":
     opt = parse().parse_args()
